@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JPG Pay</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f4f7fa; --card:#ffffff; --green:#118c5f; --green-d:#0d7150;
+  --tint:#e8f3ef; --ink:#161a22; --muted:#b4bcc6; --line:#e3e9ee;
+  --orange:#f26522; --err:#e8676a; --overlay:rgba(20,24,30,.55);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161c; --card:#1b2129; --tint:#1f3a31; --ink:#eef2f5;
+    --muted:#6b7683; --line:#2a323c; --green:#19a672; --green-d:#13875c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161c; --card:#1b2129; --tint:#1f3a31; --ink:#eef2f5;
+  --muted:#6b7683; --line:#2a323c; --green:#19a672; --green-d:#13875c;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Poppins","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:24px 16px;
+}
+.wrap{width:100%;max-width:400px;text-align:center}
+.logo{width:170px;height:auto;margin:0 auto 40px;display:block;background:#fff;padding:14px}
+.field{
+  display:flex;align-items:center;gap:14px;background:var(--card);
+  border:1px solid var(--line);border-radius:999px;height:56px;padding:0 22px;margin-bottom:16px;
+  transition:border-color .15s, box-shadow .15s;
+}
+.field:focus-within{border-color:var(--green);box-shadow:0 0 0 3px var(--tint)}
+.field svg{flex:none;width:22px;height:22px;fill:var(--green)}
+.field input{
+  flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);
+  font:inherit;font-size:17px;
+}
+.field input::placeholder{color:var(--muted)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:0 12px;margin:18px 0 22px}
+a{color:var(--green);font-weight:500}
+.radio{display:flex;align-items:center;gap:10px;color:var(--green);font-weight:500;cursor:pointer;font-size:16px}
+.radio input{position:absolute;opacity:0}
+.radio i{width:26px;height:26px;border-radius:50%;border:2px solid var(--green);display:grid;place-items:center;flex:none}
+.radio input:checked+i::after{content:"";width:14px;height:14px;border-radius:50%;background:var(--green)}
+.radio input:focus-visible+i{box-shadow:0 0 0 3px var(--tint)}
+.agree{justify-content:center;margin-bottom:26px}
+.btn{
+  width:100%;height:58px;border:0;border-radius:999px;background:var(--green);color:#fff;
+  font:inherit;font-size:19px;font-weight:600;cursor:pointer;
+  box-shadow:0 8px 18px rgba(17,140,95,.28);transition:background .15s, transform .1s;
+}
+.btn:hover{background:var(--green-d)}
+.btn:active{transform:scale(.99)}
+.btn:focus-visible,.send:focus-visible,.x:focus-visible{outline:3px solid var(--tint);outline-offset:2px}
+.forget{display:inline-block;margin-top:34px;font-size:17px}
+.ver{position:fixed;right:20px;bottom:calc(14px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:14px}
+
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.top h1{margin:0;font-size:24px;font-weight:600;color:var(--green)}
+.back{width:44px;height:44px;border:0;background:transparent;color:var(--green);cursor:pointer;padding:8px}
+.back svg{width:100%;height:100%}.sp{width:44px}
+.cc{color:var(--green);font-weight:600;font-size:17px}
+.bar{width:1px;height:26px;background:var(--line);flex:none}
+.field .send{flex:none;margin-right:-14px;border:0;border-radius:999px;background:var(--green);color:#fff;font:inherit;font-size:16px;font-weight:600;height:40px;padding:0 24px;cursor:pointer}
+.field .send:disabled{opacity:.55}
+#regView .msg{min-height:20px;margin:8px 6px 16px;text-align:left;font-size:15px}
+/* modal */
+.overlay{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+.overlay.open{display:flex}
+.modal{
+  width:100%;max-width:420px;background:var(--card);border-radius:22px;padding:28px 26px 26px;text-align:left;
+  animation:pop .18s ease-out;
+}
+@keyframes pop{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.modal{animation:none}.btn{transition:none}}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px}
+.mh h2{margin:0;font-size:22px;font-weight:600}
+.x{width:52px;height:52px;border-radius:50%;border:0;background:var(--tint);color:var(--ink);font-size:26px;cursor:pointer;line-height:1}
+.hint{color:var(--green);font-size:17px;line-height:1.5;margin:0 0 12px}
+.otp{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:999px;height:60px;padding:0 10px 0 22px;margin-top:20px}
+.otp svg{width:34px;height:34px;flex:none;stroke:var(--ink);fill:none;stroke-width:1.8}
+.otp input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);font:inherit;font-size:22px;font-weight:500;letter-spacing:.04em}
+.otp input::placeholder{color:var(--muted);letter-spacing:0}
+.send{border:0;border-radius:999px;background:var(--green);color:#fff;font:inherit;font-size:17px;font-weight:600;height:42px;padding:0 24px;cursor:pointer}
+.send:disabled{opacity:.55;cursor:not-allowed}
+.msg{min-height:44px;margin:16px 6px 18px;color:var(--err);font-size:17px;line-height:1.3}
+.msg.ok{color:var(--green)}
+</style>
+</head>
+<body>
+<main class="wrap" id="loginView">
+  <svg class="logo" viewBox="0 0 200 190" role="img" aria-label="JPG Pay">
+    <g fill="#f26522">
+      <rect x="20" y="30" width="6" height="6"/><rect x="34" y="38" width="8" height="8"/>
+      <rect x="20" y="52" width="8" height="8"/><rect x="34" y="66" width="8" height="8"/>
+      <rect x="22" y="78" width="6" height="6"/><rect x="30" y="94" width="8" height="8"/>
+    </g>
+    <rect x="52" y="10" width="108" height="98" rx="16" fill="#161a22"/>
+    <g fill="#e8ecef"><rect x="54" y="32" width="12" height="12"/><rect x="70" y="48" width="12" height="12"/><rect x="54" y="64" width="12" height="12"/><rect x="70" y="80" width="12" height="12"/></g>
+    <g fill="#8a939c"><rect x="86" y="32" width="10" height="10"/><rect x="86" y="64" width="10" height="10"/></g>
+    <rect x="138" y="48" width="52" height="34" rx="10" fill="#f26522"/>
+    <path d="M154 66l8 8 15-16" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="100" y="152" text-anchor="middle" font-family="Poppins,Segoe UI,sans-serif" font-weight="800" font-size="58" letter-spacing="2"><tspan fill="#f26522">J</tspan><tspan fill="#f26522">P</tspan><tspan fill="#161a22">G</tspan></text>
+    <text x="100" y="180" text-anchor="middle" font-family="Poppins,Segoe UI,sans-serif" font-weight="600" font-size="20" letter-spacing="9" fill="currentColor" style="fill:var(--ink)">PAY</text>
+  </svg>
+
+  <div class="field">
+    <svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0-2a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zM4 20c0-3.3 3.6-5.5 8-5.5s8 2.2 8 5.5v1H4v-1zm2.2-.5h11.6c-.6-1.7-3-3-5.8-3s-5.2 1.3-5.8 3z"/></svg>
+    <input id="phone" type="tel" inputmode="numeric" placeholder="Phone" autocomplete="tel">
+  </div>
+  <div class="field">
+    <svg viewBox="0 0 24 24"><path d="M6 10V8a6 6 0 0 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 0 0-8 0v2z"/></svg>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+  </div>
+  <div class="field">
+    <svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.4 9.3-8 11-4.6-1.7-8-6-8-11V5l8-3zm0 2.1L6 6.4V11c0 3.9 2.5 7.3 6 8.8V4.1z"/></svg>
+    <input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="6-Digit PIN">
+  </div>
+
+  <div class="row">
+    <a href="#" id="toReg">Register</a>
+    <label class="radio"><input type="checkbox"><i></i>Remember Me</label>
+  </div>
+  <label class="radio agree"><input type="checkbox" checked><i></i><span>Agree <a href="#" onclick="return false">"User Privacy Agreement"</a></span></label>
+
+  <button class="btn" id="signin">Sign In</button>
+  <a class="forget" href="#" onclick="return false">Forget Password</a>
+</main>
+<main class="wrap" id="regView" hidden>
+  <div class="top"><button class="back" id="toLogin" aria-label="Back to sign in"><svg viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button><h1>Register</h1><span class="sp"></span></div>
+  <div class="field"><svg viewBox="0 0 24 24"><path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zm0-2a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zM4 20c0-3.3 3.6-5.5 8-5.5s8 2.2 8 5.5v1H4v-1zm2.2-.5h11.6c-.6-1.7-3-3-5.8-3s-5.2 1.3-5.8 3z"/></svg><input placeholder="User Name" autocomplete="username"></div>
+  <div class="field"><svg viewBox="0 0 24 24"><path d="M6 10V8a6 6 0 0 1 12 0v2h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h1zm2 0h8V8a4 4 0 0 0-8 0v2z"/></svg><input type="password" placeholder="Password" autocomplete="new-password"></div>
+  <div class="field"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11 11 0 0 0 3.5.56 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.2.2 2.400.56 3.5a1 1 0 0 1-.25 1z"/></svg><b class="cc">+91</b><i class="bar"></i><input id="rphone" type="tel" inputmode="numeric" placeholder="Phone"></div>
+  <div class="field"><svg viewBox="0 0 24 24"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2.3V17h16V7.3l-8 5.7-8-5.7zM5.5 7l6.5 4.6L18.500 7z"/></svg><input id="rotp" inputmode="numeric" maxlength="6" placeholder="OTP Code"><button class="send" id="rsend" type="button">Send</button></div>
+  <div class="field"><svg viewBox="0 0 24 24"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3-3a3 3 0 0 1 4.2 4.2l-1.6 1.6-1.4-1.4 1.600-1.600a1 1 0 0 0-1.400-1.400l-3 3a1 1 0 0 1-1.400 0zM13.400 10.600a1 1 0 0 1 0 1.400l-3 3a3 3 0 0 1-4.200-4.200l1.600-1.600 1.400 1.400-1.600 1.600a1 1 0 0 0 1.400 1.400l3-3a1 1 0 0 1 1.400 0z"/></svg><input placeholder="Invite Code"></div>
+  <div class="msg" id="rmsg" aria-live="polite"></div>
+  <button class="btn" id="signup">Sign Up</button>
+</main>
+<div class="ver">v1.0.2</div>
+
+<div class="overlay" id="ov" role="dialog" aria-modal="true" aria-labelledby="mt">
+  <div class="modal">
+    <div class="mh"><h2 id="mt">New Device Verification</h2><button class="x" id="close" aria-label="Close">&times;</button></div>
+    <p class="hint">Tap Send to receive the OTP, then enter it to confirm this login.</p>
+    <p class="hint">OTP will be sent to <b id="dest">your phone</b></p>
+    <div class="otp">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="1.5"/><path d="M3 6l9 7 9-7"/></svg>
+      <input id="otp" inputmode="numeric" maxlength="6" placeholder="OTP Code" aria-label="OTP Code">
+      <button class="send" id="send">Send</button>
+    </div>
+    <div class="msg" id="msg" aria-live="polite"></div>
+    <button class="btn" id="confirm">Confirm</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const ov=$('ov'),msg=$('msg'),send=$('send');
+function say(t,ok){msg.textContent=t;msg.className='msg'+(ok?' ok':'')}
+$('signin').onclick=()=>{
+  const p=$('phone').value.trim();
+  $('dest').textContent=p?'+91 '+p:'your phone';
+  say('');ov.classList.add('open');$('otp').focus();
+};
+$('close').onclick=()=>ov.classList.remove('open');
+ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')ov.classList.remove('open')});
+let t;
+send.onclick=()=>{
+  say('OTP sent. Enter the code to continue.',true);
+  let s=30;send.disabled=true;send.textContent=s+'s';
+  clearInterval(t);
+  t=setInterval(()=>{s--;if(s<=0){clearInterval(t);send.disabled=false;send.textContent='Send'}else send.textContent=s+'s'},1000);
+};
+$('confirm').onclick=()=>{
+  if(!$('otp').value.trim()) say('Enter the OTP code to confirm this login.');
+  else say('Demo only: no real verification is connected.',true);
+};
+const L=$('loginView'),R=$('regView');
+$('toReg').onclick=e=>{e.preventDefault();L.hidden=true;R.hidden=false;scrollTo(0,0)};
+$('toLogin').onclick=()=>{R.hidden=true;L.hidden=false};
+let rt;const rm=$('rmsg'),rs=$('rsend');
+rs.onclick=()=>{
+  if(!$('rphone').value.trim()){rm.className='msg';rm.textContent='Enter your phone number first.';return}
+  rm.className='msg ok';rm.textContent='OTP sent to +91 '+$('rphone').value.trim();
+  let n=30;rs.disabled=true;rs.textContent=n+'s';clearInterval(rt);
+  rt=setInterval(()=>{n--;if(n<=0){clearInterval(rt);rs.disabled=false;rs.textContent='Send'}else rs.textContent=n+'s'},1000);
+};
+$('signup').onclick=()=>{rm.className='msg ok';rm.textContent='Demo only: no account was created.'};
+</script>
+</body>
+</html>
